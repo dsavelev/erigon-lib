@@ -33,6 +33,12 @@ import (
 	"golang.org/x/crypto/sha3"
 )
 
+var (
+	ErrBaseParseTxn = errors.New(ParseTransactionErrorPrefix) // all other txn parsing errors are wrap this
+
+	ErrParseTxnInvalidChainID = fmt.Errorf("%w: invalid chainID", ErrBaseParseTxn)
+)
+
 type TxParsseConfig struct {
 	chainID uint256.Int
 }
@@ -309,7 +315,7 @@ func (ctx *TxParseContext) ParseTransaction(payload []byte, pos int, slot *TxSlo
 			ctx.chainId.Sub(&ctx.v, u256.N35)
 			ctx.chainId.Rsh(&ctx.chainId, 1)
 			if ctx.chainId.Cmp(&ctx.cfg.chainID) != 0 {
-				return 0, fmt.Errorf("%s: %s, %d (expected %d)", ParseTransactionErrorPrefix, "invalid chainID", ctx.chainId.Uint64(), ctx.cfg.chainID.Uint64())
+				return 0, fmt.Errorf("%w, %d (expected %d)", ErrParseTxnInvalidChainID, ctx.chainId.Uint64(), ctx.cfg.chainID.Uint64())
 			}
 
 			chainIdBits = ctx.chainId.BitLen()
@@ -339,7 +345,7 @@ func (ctx *TxParseContext) ParseTransaction(payload []byte, pos int, slot *TxSlo
 		ctx.chainId.Set(&ctx.cfg.chainID)
 	}
 	if ctx.chainId.Cmp(&ctx.cfg.chainID) != 0 {
-		return 0, fmt.Errorf("%s: %s, %d (expected %d)", ParseTransactionErrorPrefix, "invalid chainID", ctx.chainId.Uint64(), ctx.cfg.chainID.Uint64())
+		return 0, fmt.Errorf("%w, %d (expected %d)", ErrParseTxnInvalidChainID, ctx.chainId.Uint64(), ctx.cfg.chainID.Uint64())
 	}
 
 	// Next follows R of the signature

@@ -32,10 +32,10 @@ type NewPooledTransactionHashesPacket [][length.Hash]byte
 func ParseHashesCount(payload []byte, pos int) (count int, dataPos int, err error) {
 	dataPos, dataLen, err := rlp.List(payload, pos)
 	if err != nil {
-		return 0, 0, fmt.Errorf("%s: hashes len: %w", rlp.ParseHashErrorPrefix, err)
+		return 0, 0, fmt.Errorf("%w: when parse hashes count len", err)
 	}
 	if dataLen%33 != 0 {
-		return 0, 0, fmt.Errorf("%s: hashes len must be multiple of 33", rlp.ParseHashErrorPrefix)
+		return 0, 0, fmt.Errorf("%w: hashes len must be multiple of 33", rlp.ErrNonCanonicalSize)
 	}
 	return dataLen / 33, dataPos, nil
 }
