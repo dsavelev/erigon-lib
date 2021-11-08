@@ -68,6 +68,7 @@ func NewIndex(indexFile string) (*Index, error) {
 	var err error
 	idx.f, err = os.Open(indexFile)
 	if err != nil {
+		panic(err)
 		return nil, err
 	}
 	var stat os.FileInfo
@@ -76,6 +77,7 @@ func NewIndex(indexFile string) (*Index, error) {
 	}
 	size := int(stat.Size())
 	if idx.mmapHandle1, idx.mmapHandle2, err = mmap.Mmap(idx.f, size); err != nil {
+		panic(err)
 		return nil, err
 	}
 	idx.data = idx.mmapHandle1[:size]
