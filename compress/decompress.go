@@ -95,34 +95,34 @@ type Getter struct {
 }
 
 func (g *Getter) zero() bool {
-	g.offset, _ = binary.Uvarint(g.patternDict.data[g.offset : g.offset+8])
+	g.offset, _ = binary.Uvarint(g.patternDict.data[g.offset : g.offset+10])
 	return g.offset < g.patternDict.cutoff
 }
 
 func (g *Getter) one() bool {
-	_, n := binary.Uvarint(g.patternDict.data[g.offset : g.offset+8])
+	_, n := binary.Uvarint(g.patternDict.data[g.offset : g.offset+10])
 	g.offset, _ = binary.Uvarint(g.patternDict.data[g.offset+uint64(n):])
 	return g.offset < g.patternDict.cutoff
 }
 
 func (g *Getter) posZero() bool {
-	g.offset, _ = binary.Uvarint(g.posDict.data[g.offset : g.offset+8])
+	g.offset, _ = binary.Uvarint(g.posDict.data[g.offset : g.offset+10])
 	return g.offset < g.posDict.cutoff
 }
 
 func (g *Getter) posOne() bool {
-	_, n := binary.Uvarint(g.posDict.data[g.offset : g.offset+8])
+	_, n := binary.Uvarint(g.posDict.data[g.offset : g.offset+10])
 	g.offset, _ = binary.Uvarint(g.posDict.data[g.offset+uint64(n):])
 	return g.offset < g.posDict.cutoff
 }
 
 func (g *Getter) pattern() []byte {
-	l, n := binary.Uvarint(g.patternDict.data[g.offset : g.offset+8])
+	l, n := binary.Uvarint(g.patternDict.data[g.offset : g.offset+10])
 	return g.patternDict.data[g.offset+uint64(n) : g.offset+uint64(n)+l]
 }
 
 func (g *Getter) pos() uint64 {
-	pos, _ := binary.Uvarint(g.posDict.data[g.offset:])
+	pos, _ := binary.Uvarint(g.posDict.data[g.offset : g.offset+10])
 	return pos
 }
 
