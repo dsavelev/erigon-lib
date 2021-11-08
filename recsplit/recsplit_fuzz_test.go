@@ -22,11 +22,15 @@ package recsplit
 import (
 	"path"
 	"testing"
+
+	"github.com/c2h5oh/datasize"
+	"github.com/ledgerwatch/erigon-lib/etl"
 )
 
 // gotip test -trimpath -v -fuzz=FuzzRecSplit -fuzztime=10s ./recsplit
 
 func FuzzRecSplit(f *testing.F) {
+	etl.BufferOptimalSize = 16 * datasize.MB
 	f.Add(2, []byte("1stkey2ndkey"))
 	f.Fuzz(func(t *testing.T, count int, in []byte) {
 		if count < 1 {
