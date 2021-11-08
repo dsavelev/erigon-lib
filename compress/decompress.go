@@ -18,6 +18,7 @@ package compress
 
 import (
 	"encoding/binary"
+	"fmt"
 	"os"
 
 	"github.com/ledgerwatch/erigon-lib/mmap"
@@ -50,6 +51,8 @@ func NewDecompressor(compressedFile string) (*Decompressor, error) {
 	}
 	size := int(stat.Size())
 	if d.mmapHandle1, d.mmapHandle2, err = mmap.Mmap(d.f, size); err != nil {
+		s, _ := d.f.Stat()
+		fmt.Printf("%d\n", s.Size()/1024)
 		return nil, err
 	}
 	d.data = d.mmapHandle1[:size]
