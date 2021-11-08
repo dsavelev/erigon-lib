@@ -127,6 +127,7 @@ func (g *Getter) pattern() []byte {
 }
 
 func (g *Getter) pos() uint64 {
+	_ = g.patternDict.data[g.offset:][0]
 	pos, _ := binary.Uvarint(g.posDict.data[g.offset:])
 	return pos
 }
