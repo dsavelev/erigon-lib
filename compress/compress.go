@@ -33,9 +33,10 @@ import (
 	"github.com/ledgerwatch/erigon-lib/common"
 	"github.com/ledgerwatch/erigon-lib/etl"
 	"github.com/ledgerwatch/erigon-lib/patricia"
+	"github.com/ledgerwatch/log/v3"
 )
 
-const ASSERT = false
+const ASSERT = true
 
 // Compressor is the main operating type for performing per-word compression
 // After creating a compression, one needs to add words to it, using `AddWord` function
@@ -1066,6 +1067,7 @@ func (c *Compressor) buildDictionary() error {
 
 func (c *Compressor) processSuperstring() error {
 	c.divsufsort.ComputeSuffixArray(c.superstring, c.suffixarray[:len(c.superstring)])
+
 	// filter out suffixes that start with odd positions - we reuse the first half of sa.suffixarray for that
 	// because it won't be used after filtration
 	n := len(c.superstring) / 2
@@ -1078,7 +1080,7 @@ func (c *Compressor) processSuperstring() error {
 		}
 	}
 	// Now create an inverted array - we reuse the second half of sa.suffixarray for that
-	saInverted := c.suffixarray[:n]
+	saInverted := c.suffixarray[n:len(c.superstring)]
 	for i := 0; i < n; i++ {
 		saInverted[saFiltered[i]] = int32(i)
 	}
@@ -1105,7 +1107,6 @@ func (c *Compressor) processSuperstring() error {
 		for i+k < n && j+k < n && c.superstring[(i+k)*2] != 0 && c.superstring[(j+k)*2] != 0 && c.superstring[(i+k)*2+1] == c.superstring[(j+k)*2+1] {
 			k++
 		}
-
 		c.lcp[saInverted[i]] = int32(k) // lcp for the present suffix.
 
 		// Deleting the starting character from the string.
@@ -1113,6 +1114,32 @@ func (c *Compressor) processSuperstring() error {
 			k--
 		}
 	}
+
+	if ASSERT {
+		for i := 0; i < n-1; i++ {
+			var prefixLen int
+			p1 := int(saFiltered[i])
+			p2 := int(saFiltered[i+1])
+			for p1+prefixLen < n && p2+prefixLen < n && c.superstring[(p1+prefixLen)*2] != 0 && c.superstring[(p2+prefixLen)*2] != 0 && c.superstring[(p1+prefixLen)*2+1] == c.superstring[(p2+prefixLen)*2+1] {
+				prefixLen++
+			}
+			if prefixLen != int(c.lcp[i]) {
+				log.Error("Mismatch", "prefixLen", prefixLen, "lcp[i]", c.lcp[i])
+				panic(1)
+				break
+			}
+			l := int(c.lcp[i]) // Length of potential dictionary word
+			if l < 2 {
+				continue
+			}
+			dictKey := make([]byte, l)
+			for s := 0; s < l; s++ {
+				dictKey[s] = c.superstring[(int(saFiltered[i])+s)*2+1]
+			}
+			//fmt.Printf("%d %d %s\n", saFiltered[i], c.lcp[i], dictKey)
+		}
+	}
+
 	// Walk over LCP array and compute the scores of the strings
 	b := saInverted
 	j = 0
