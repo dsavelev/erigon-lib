@@ -97,6 +97,7 @@ func Transform(
 	loadFunc LoadFunc,
 	args TransformArgs,
 ) error {
+	fmt.Printf("Transform\n")
 	bufferSize := BufferOptimalSize
 	if args.BufferSize > 0 {
 		bufferSize = datasize.ByteSize(args.BufferSize)
@@ -137,7 +138,9 @@ func extractBucketIntoFiles(
 		return err
 	}
 	defer c.Close()
+	fmt.Printf("startkey k = %x\n", startkey)
 	for k, v, e := c.Seek(startkey); k != nil; k, v, e = c.Next() {
+		fmt.Printf("extract k = %x\n", k)
 		if e != nil {
 			return e
 		}
