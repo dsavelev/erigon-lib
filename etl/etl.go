@@ -137,10 +137,12 @@ func extractBucketIntoFiles(
 		return err
 	}
 	defer c.Close()
+	fmt.Printf("startkey = %x\n", startkey)
 	for k, v, e := c.Seek(startkey); k != nil; k, v, e = c.Next() {
 		if e != nil {
 			return e
 		}
+		fmt.Printf("k = %x\n", k)
 		if err := common.Stopped(quit); err != nil {
 			return err
 		}
